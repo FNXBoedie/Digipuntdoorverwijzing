@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="nl-BE">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digipunt Doorverwijzing</title>
+  <style>
+    /* Reset and base styles */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #e0f2fe, #f0f9ff);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    /* Utility classes */
+    .container {
+      max-width: 75rem;
+      margin: 0 auto;
+    }
+
+    .text-center { text-align: center; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-6 { margin-bottom: 3rem; } /* Reduced from 6rem */
+    .mt-1 { margin-top: 0.25rem; }
+    .mt-2 { margin-top: 0.5rem; }
+    .space-y-4 > * + * { margin-top: 1rem; }
+    .flex { display: flex; }
+    .gap-4 { gap: 1rem; }
+    .flex-1 { flex: 1; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .grid { display: grid; }
+    .w-full { width: 100%; }
+
+    /* Component styles */
+    .title {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: #0369a1;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .subtitle {
+      color: #0c4a6e;
+    }
+
+    .card, .referral-card {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 1rem; /* Ensure consistent font size for all labels */
+      font-weight: 500;
+      color: #0c4a6e;
+      margin-bottom: 0.25rem;
+    }
+
+    .input, .textarea, select {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 0.875rem;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(147, 197, 253, 0.3);
+      border-radius: 0.375rem;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .input:focus, .textarea:focus, select:focus {
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+    }
+
+    .button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 0.375rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.15s ease-in-out;
+    }
+
+    .button-primary {
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      color: white;
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    }
+
+    .button-primary:hover {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      transform: translateY(-1px);
+    }
+
+    .button-secondary {
+      background: rgba(255, 255, 255, 0.9);
+      color: #0369a1;
+      border: 1px solid rgba(14, 165, 233, 0.3);
+      backdrop-filter: blur(5px);
+    }
+
+    .button-secondary:hover {
+      background: rgba(255, 255, 255, 1);
+      border-color: #0ea5e9;
+      transform: translateY(-1px);
+    }
+
+    .referral-card {
+      width: 100%;
+      max-width: 45rem; /* Reduce the max-width to make the card less wide */
+      margin: 0 auto;
+      height: fit-content;
+      overflow-wrap: break-word;
+      align-self: start;
+    }
+
+    .referral-card > div:not(:last-child) {
+      margin-bottom: 1rem;
+    }
+
+    .referral-header {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.2rem;
+      margin-bottom: 1.5rem;
+      padding-right: 60px;
+    }
+
+    .referral-logo {
+      position: absolute;
+      right: 0;
+      top: 0;
+      max-width: 50px;
+      height: auto;
+    }
+
+    .referral-location {
+      color: #2563eb;
+      font-weight: 600;
+    }
+
+    .referral-arrow {
+      color: #9ca3af;
+    }
+
+    .referral-department {
+      color: #6b7280;
+    }
+
+    .referral-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #6b7280;
+    }
+
+    .referral-text {
+      color: #1f2937;
+    }
+
+    .referral-footer {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 1rem;
+      margin-top: 1rem;
+    }
+
+    /* Add styles for the location selector */
+    .location-input-group {
+      display: flex;
+      gap: 0.5rem;
+      align-items: stretch;
+    }
+
+    .location-dropdown {
+      position: relative;
+    }
+
+    .location-dropdown-button {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(147, 197, 253, 0.3);
+      border-radius: 0.375rem;
+      padding: 0.5rem 1rem;
+      color: #0369a1;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .location-dropdown-button:hover {
+      background: rgba(255, 255, 255, 1);
+      border-color: #0ea5e9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.1);
+    }
+
+    .location-dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(147, 197, 253, 0.3);
+      border-radius: 0.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      z-index: 10;
+      min-width: 200px;
+    }
+
+    .location-dropdown-content.show {
+      display: block;
+    }
+
+    .location-dropdown-content button {
+      background: transparent;
+      color: #0c4a6e;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .location-dropdown-content button:hover {
+      background: rgba(14, 165, 233, 0.1);
+    }
+
+    .location-option {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
+
+    .location-option:hover {
+      background: rgba(14, 165, 233, 0.1);
+    }
+
+    @media (min-width: 768px) {
+      .grid-cols-2 {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+        align-items: start;
+      }
+    }
+
+    @media print {
+      body { background: white; }
+      .no-print { display: none; }
+      .referral-card {
+        box-shadow: none;
+        margin: 0;
+        max-width: none;
+      }
+      .referral-logo { 
+        display: block; 
+        transform: scale(1.5);
+        position: absolute;
+        top: 10px;
+        right: 10px;
+      } /* Ensure logo is visible in print */
+      .print-card-container {
+        border: 2px solid #000;
+        padding: 15px;
+        margin: 15px;
+        border-radius: 10px;
+        background-color: #f9f9f9;
+      }
+    }
+    .textarea {
+      resize: none; /* Prevent manual resizing */
+      overflow-y: hidden; /* Hide vertical scrollbar */
+      min-height: 80px; /* Set a minimum height */
+    }
+    .address-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 10px;
+    }
+    .address-image {
+      width: 150px; /* 50% larger than the original 100px */
+      height: auto;
+      object-fit: contain;
+      margin-top: -10px;
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(147, 197, 253, 0.2);
+      margin: 1rem 0;
+    }
+    .hours {
+      margin-left: 1rem;
+    }
+    .vertical-divider {
+      border-left: 1px solid #d1d5db;
+      height: 100%;
+      margin: 0 1rem;
+    }
+    .address-text {
+      display: flex;
+      align-items: center;
+    }
+
+    /* Toggle switch styles */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 24px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(203, 213, 225, 0.3);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      transition: .3s ease-in-out;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 2px;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: .3s ease-in-out;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      border-color: rgba(255, 255, 255, 0.6);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
+      background: #ffffff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Add map styles */
+    .map-container {
+      margin-top: 1rem;
+      width: 100%;
+    }
+    .location-map {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="text-center mb-6 no-print">
+      <h1 class="title">Digipunt Doorverwijzing</h1>
+      <p class="subtitle mt-2">Maak doorverwijzingen naar andere locaties.</p>
+    </div>
+
+    <div class="grid grid-cols-2">
+      <form id="referralForm" class="card space-y-4 no-print">
+        <div class="form-group">
+          <label for="digipuntLocation">Uw Digipunt Locatie</label>
+          <div class="location-input-group">
+            <input type="text" id="digipuntLocation" class="input flex-1" placeholder="" required>
+            <div class="location-dropdown">
+              <button type="button" class="location-dropdown-button" id="locationDropdownBtn">▼</button>
+              <div class="location-dropdown-content" id="locationDropdown">
+                <div class="location-option" data-value="KW Vlaamse kaai">KW Vlaamse kaai</div>
+                <div class="location-option" data-value="KW Brugsesteenweg">KW Brugsesteenweg</div>
+                <div class="location-option" data-value="KW UCO">KW UCO</div>
+                <div class="location-option" data-value="AMAL">AMAL</div>
+                <div class="location-option" data-value="Jobteam">Jobteam</div>
+                <div class="location-option" data-value="Scheldeoord">Scheldeoord</div>
+                <div class="location-option" data-value="De Serre">De Serre</div>
+                <div class="location-option" data-value="Eetcafé Toreke">Eetcafé Toreke</div>
+                <div class="location-option" data-value="WGC St. Am.">WGC St. Am.</div>
+                <div class="location-option" data-value="Wijkkantoor Rabot">Wijkkantoor Rabot</div>
+                <div class="location-option" data-value="Het Stadskantoor">Het Stadskantoor</div>
+                <div class="location-option" data-value="Bibliotheek De Krook">Bib De Krook</div>
+                <div class="location-option" data-value="Bib Brugse Poort">Bib Brugse Poort</div>
+                <div class="location-option" data-value="Bib Watersportbaan">Bib Watersportbaan</div>
+                <div class="location-option" data-value="Bib St Amandsberg">Bib St Amandsberg</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="referralDepartment">Locatie van doorverwijzing</label>
+          <div class="location-input-group">
+            <input type="text" id="referralDepartment" class="input flex-1" required>
+            <div class="location-dropdown">
+              <button type="button" class="location-dropdown-button" id="departmentDropdownBtn">▼</button>
+              <div class="location-dropdown-content" id="departmentDropdown">
+                
+                <div class="location-option" data-value="KW Vlaamse kaai">KW Vlaamse kaai</div>
+                <div class="location-option" data-value="KW Brugsesteenweg">KW Brugsesteenweg</div>
+                <div class="location-option" data-value="KW UCO">KW UCO</div>
+                <div class="location-option" data-value="AMAL">AMAL</div>
+                <div class="location-option" data-value="Jobteam">Jobteam</div>
+                <div class="location-option" data-value="Scheldeoord">Scheldeoord</div>
+                <div class="location-option" data-value="De Serre">De Serre</div>
+                <div class="location-option" data-value="Eetcafé Toreke">Eetcafé Toreke</div>
+                <div class="location-option" data-value="WGC St. Am.">WGC St. Am.</div>
+                <div class="location-option" data-value="Wijkkantoor Rabot">Wijkkantoor Rabot</div>
+                <div class="location-option" data-value="Het Stadskantoor">Het Stadskantoor</div>
+                <div class="location-option" data-value="Bibliotheek De Krook">Bib De Krook</div>
+                <div class="location-option" data-value="Bib Brugse Poort">Bib Brugse Poort</div>
+                <div class="location-option" data-value="Bib Watersportbaan">Bib Watersportbaan</div>
+                <div class="location-option" data-value="Bib St Amandsberg">Bib St Amandsberg</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="visitorQuestion">Vraag van de bezoeker</label>
+          <textarea id="visitorQuestion" class="textarea" rows="3" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="referrerName">Uw naam</label>
+          <input type="text" id="referrerName" class="input" required>
+        </div>
+
+        <div class="form-group">
+          <label for="referralPerson">Contactpersoon</label>
+          <input type="text" id="referralPerson" class="input" required>
+        </div>
+
+        <div class="form-group">
+          <div class="flex items-center justify-between">
+            <label for="showAddressToggle">Toon adres</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="showAddressToggle" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="flex items-center justify-between">
+            <label for="showMapToggle">Toon kaart</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="showMapToggle" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="flex gap-4">
+          <button type="button" onclick="saveReferral()" class="button button-secondary flex-1">Opslaan</button>
+          <button type="button" onclick="window.print()" class="button button-secondary flex-1">Afdrukken</button>
+          <button type="button" onclick="shareViaEmail()" class="button button-secondary flex-1">Delen via e-mail</button>
+        </div>
+      </form>
+
+      <div class="print-card-container">
+        <div id="referralCard" class="referral-card">
+          <div class="referral-header">
+            <span class="referral-location">Digipunt <span id="cardLocation">Vlaamse kaai</span></span>
+            <span class="referral-arrow">→</span>
+            <span class="referral-department" id="cardDepartment"></span>
+            <img src="images/dplogo.png" alt="Logo" class="referral-logo">
+          </div>
+          
+          <div>
+            <div class="referral-label"><strong>Vraag van bezoeker</strong></div>
+            <p class="referral-text mt-1" id="cardQuestion"></p>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-top: 1.5rem;">
+            <div>
+              <div class="referral-label"><strong>Doorverwezen door</strong></div>
+              <p class="referral-text" id="cardReferrer"></p>
+            </div>
+            <div>
+              <div class="referral-label"><strong>Doorverwezen naar</strong></div>
+              <p class="referral-text" id="cardPerson"></p>
+            </div>
+          </div>
+          <hr class="divider">
+          <div class="address-card" style="display: none;">
+            <div class="flex gap-4">
+              <img src="images/address.png" alt="" class="address-image">
+              <div class="flex flex-1 gap-4">
+                <div class="flex flex-1 flex-col">
+                  <span class="address-text"></span>
+                </div>
+                <div class="vertical-divider"></div>
+                <div class="hours"></div>
+              </div>
+            </div>
+          </div>
+          <div class="map-container" style="display: none;">
+            <img src="" alt="Location map" class="location-map">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('referralForm');
+    const locationDropdownBtn = document.getElementById('locationDropdownBtn');
+    const locationDropdown = document.getElementById('locationDropdown');
+    const digipuntLocation = document.getElementById('digipuntLocation');
+    const departmentDropdownBtn = document.getElementById('departmentDropdownBtn');
+    const departmentDropdown = document.getElementById('departmentDropdown');
+    const referralDepartment = document.getElementById('referralDepartment');
+    const visitorQuestion = document.getElementById('visitorQuestion');
+
+    // Toggle dropdowns
+    locationDropdownBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      locationDropdown.classList.toggle('show');
+      departmentDropdown.classList.remove('show'); // Close other dropdown
+    });
+
+    departmentDropdownBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      departmentDropdown.classList.toggle('show');
+      locationDropdown.classList.remove('show'); // Close other dropdown
+    });
+
+    // Handle location selection
+    locationDropdown.addEventListener('click', (e) => {
+      if (e.target.classList.contains('location-option')) {
+        digipuntLocation.value = e.target.dataset.value;
+        locationDropdown.classList.remove('show');
+        updateCard();
+      }
+    });
+
+    // Handle department selection
+    departmentDropdown.addEventListener('click', (e) => {
+      if (e.target.classList.contains('location-option')) {
+        referralDepartment.value = e.target.dataset.value;
+        departmentDropdown.classList.remove('show');
+        updateCard();
+      }
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.location-dropdown')) {
+        locationDropdown.classList.remove('show');
+        departmentDropdown.classList.remove('show');
+      }
+    });
+
+    const locationData = {
+      'Bibliotheek De Krook': {
+        image: 'images/krook.jpeg',
+        address: 'Miriam Makebaplein 1,<br>9000 Gent',
+        hours: `
+          <div class="hours">
+            <strong>Openingsuren</strong><br>
+            maandag 10:00 - 17:00<br>
+            dinsdag 10:00 - 17:00<br>
+            woensdag 10:00 - 17:00<br>
+            donderdag 10:00 - 17:00<br>
+            vrijdag 10:00 - 17:00
+          </div>`
+      },
+      'Eetcafé Toreke': {
+        image: 'images/toreke.jpeg',
+        address: 'Vlotstraat 22,<br>9000 Gent',
+        mapImage: 'images/torekemap.png',
+        hours: `
+          <div class="hours">
+            <strong>Openingsuren</strong><br>
+            maandag 13:30 - 16:00<br>
+            dinsdag gesloten<br>
+            woensdag gesloten<br>
+            donderdag 13:30 - 16:00<br>
+            vrijdag gesloten
+          </div>`
+      },
+      'Wijkkantoor Rabot': {
+        image: 'images/wkrabot.jpg',
+        address: 'Griendeplein 16,<br>9000 Gent',
+        hours: `
+          <div class="hours">
+            <strong>Openingsuren</strong><br>
+            maandag 09:00 - 12:00<br>
+            dinsdag 09:00 - 12:00<br>
+            woensdag gesloten<br>
+            donderdag 09:00 - 12:00<br>
+            vrijdag 09:00 - 12:00
+          </div>`
+      },
+      'Het Stadskantoor': {
+        image: 'images/stadskantoor.jpg',
+        address: 'Woodrow Wilsonplein 1,<br>9000 Gent',
+        hours: `
+          <div class="hours">
+            <strong>Openingsuren</strong><br>
+            maandag 09:00-16:30<br>
+            dinsdag 09:00-16:30<br>
+            woensdag 09:00-16:30<br>
+            donderdag 09:00-16:30<br>
+            vrijdag 09:00-16:30
+          </div>`
+      },
+      // Add more locations here
+    };
+
+    const showAddressToggle = document.getElementById('showAddressToggle');
+    const showMapToggle = document.getElementById('showMapToggle');
+    const addressCard = document.querySelector('.address-card');
+    const mapContainer = document.querySelector('.map-container');
+    const divider = document.querySelector('.divider');
+
+    showAddressToggle.addEventListener('change', function() {
+      if (this.checked) {
+        const department = document.getElementById('referralDepartment').value;
+        if (locationData[department]) {
+          addressCard.style.display = 'flex';
+          divider.style.display = 'block';
+        }
+      } else {
+        addressCard.style.display = 'none';
+        divider.style.display = 'none';
+      }
+      updateCard();
+    });
+
+    showMapToggle.addEventListener('change', function() {
+      updateCard();
+    });
+
+    const updateCard = () => {
+      document.getElementById('cardLocation').textContent = 
+        document.getElementById('digipuntLocation').value || '';
+      document.getElementById('cardQuestion').textContent = 
+        document.getElementById('visitorQuestion').value || '';
+      document.getElementById('cardReferrer').textContent = 
+        document.getElementById('referrerName').value || '';
+      document.getElementById('cardDepartment').textContent = 
+        document.getElementById('referralDepartment').value || '';
+      document.getElementById('cardPerson').textContent = 
+        document.getElementById('referralPerson').value || '';
+
+      const department = document.getElementById('referralDepartment').value;
+      
+      if (locationData[department]) {
+        if (showAddressToggle.checked) {
+          addressCard.querySelector('.address-image').src = locationData[department].image;
+          addressCard.querySelector('.address-text').innerHTML = locationData[department].address;
+          if(locationData[department].hours) {
+            addressCard.querySelector('.hours').innerHTML = locationData[department].hours;
+          } else {
+            addressCard.querySelector('.hours').innerHTML = '';
+          }
+          addressCard.style.display = 'flex';
+          divider.style.display = 'block';
+        } else {
+          addressCard.style.display = 'none';
+          divider.style.display = 'none';
+        }
+
+        // Update map image
+        if (showMapToggle.checked && locationData[department].mapImage) {
+          mapContainer.querySelector('.location-map').src = locationData[department].mapImage;
+          mapContainer.style.display = 'block';
+        } else {
+          mapContainer.style.display = 'none';
+        }
+      } else {
+        addressCard.style.display = 'none';
+        divider.style.display = 'none';
+        mapContainer.style.display = 'none';
+      }
+    };
+
+    // Update card on input and select changes
+    form.querySelectorAll('input, textarea, select').forEach(input => {
+      input.addEventListener('input', updateCard);
+      input.addEventListener('change', updateCard); // Added for select element
+    });
+
+    // Auto-resize textarea
+    function autoResize(element) {
+      element.style.height = 'auto';
+      element.style.height = element.scrollHeight + 'px';
+    }
+
+    // Initialize and add event listener for textarea
+    visitorQuestion.addEventListener('input', function() {
+      autoResize(this);
+    });
+
+    // Initial resize if there's content
+    autoResize(visitorQuestion);
+
+    // Handle form submission
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      window.print();
+    });
+
+    // Initial card update
+    updateCard();
+
+    function saveReferral() {
+      const referralCard = document.getElementById('referralCard');
+      const department = document.getElementById('referralDepartment').value;
+      
+      // Create a copy of the card for saving
+      const cardClone = referralCard.cloneNode(true);
+      
+      // Update image sources to be absolute paths
+      const baseUrl = window.location.href.replace('standalone.html', '');
+      
+      // Update logo path
+      const logo = cardClone.querySelector('.referral-logo');
+      if (logo) {
+        logo.src = baseUrl + 'images/dplogo.png';
+      }
+
+      // Update location-specific images
+      if (locationData[department]) {
+        const addressImage = cardClone.querySelector('.address-image');
+        const locationMap = cardClone.querySelector('.location-map');
+        
+        if (addressImage && locationData[department].image) {
+          addressImage.src = baseUrl + locationData[department].image;
+        }
+        
+        if (locationMap && locationData[department].mapImage) {
+          locationMap.src = baseUrl + locationData[department].mapImage;
+        }
+      }
+
+      // Convert the card to a string
+      const cardHtml = cardClone.outerHTML;
+      
+      // Create a new file with the card content
+      const date = new Date();
+      const fileName = `referral_${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}_${date.getHours().toString().padStart(2, '0')}${date.getMinutes().toString().padStart(2, '0')}.html`;
+      
+      const fullHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            ${Array.from(document.styleSheets)
+              .map(sheet => Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n'))
+              .join('\n')}
+          </style>
+        </head>
+        <body>
+          ${cardHtml}
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob([fullHtml], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+
+    function shareViaEmail() {
+      const location = document.getElementById('cardLocation').textContent || '';
+      const department = document.getElementById('cardDepartment').textContent || '';
+      const question = document.getElementById('cardQuestion').textContent || '';
+      const referrer = document.getElementById('cardReferrer').textContent || '';
+      const person = document.getElementById('cardPerson').textContent || '';
+
+      let emailBody = `Digipunt Doorverwijzing\n\n`;
+      emailBody += `Van: Digipunt ${location}\n`;
+      emailBody += `Naar: ${department}\n\n`;
+      emailBody += `Vraag van bezoeker:\n${question}\n\n`;
+      emailBody += `Doorverwezen door: ${referrer}\n`;
+      emailBody += `Doorverwezen naar: ${person}\n`;
+
+      // Add address and opening hours if visible
+      const addressCard = document.querySelector('.address-card');
+      if (addressCard && addressCard.style.display !== 'none') {
+        const selectedDepartment = document.getElementById('referralDepartment').value;
+        if (locationData[selectedDepartment]) {
+          const address = locationData[selectedDepartment].address.replace(/<br\s*\/?>/g, '\n');
+          emailBody += `\nAdres:\n${address}\n`;
+          
+          if (locationData[selectedDepartment].hours) {
+            const hoursText = locationData[selectedDepartment].hours
+              .replace(/<[^>]*>/g, '')  // Remove HTML tags
+              .replace(/\s+/g, ' ')     // Remove extra whitespace
+              .trim();                  // Trim leading/trailing whitespace
+            emailBody += `\nOpeningsuren:\n${hoursText}`;
+          }
+        }
+      }
+
+      const mailtoLink = `mailto:?subject=${encodeURIComponent('Digipunt Doorverwijzing')}&body=${encodeURIComponent(emailBody)}`;
+      window.location.href = mailtoLink;
+    }
+  </script>
+</body>
+</html>
